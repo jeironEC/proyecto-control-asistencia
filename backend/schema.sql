@@ -17,45 +17,19 @@ CREATE TABLE IF NOT EXISTS usuario (
     activo tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
---
--- Estructura de tabla para la tabla modulo
---
-CREATE TABLE IF NOT EXISTS modulo (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    nombre VARCHAR(150) NOT NULL UNIQUE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Estructura de tabla para la tabla alumno
---
-CREATE TABLE IF NOT EXISTS alumno (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL UNIQUE,
-    matricula VARCHAR(80) NOT NULL UNIQUE,
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Estructura de tabla para la tabla profesor
---
-CREATE TABLE IF NOT EXISTS profesor (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL UNIQUE,
-    modulo_id INT NOT NULL,
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (modulo_id) REFERENCES modulo(id) ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
-
---
--- Estructura de tabla para la tabla personal_servicio
---
-CREATE TABLE IF NOT EXISTS personal_servicio (
-    id INT AUTO_INCREMENT PRIMARY KEY,
-    usuario_id INT NOT NULL UNIQUE,
-    cargo VARCHAR(100) NOT NULL,
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id)
-    ON DELETE CASCADE ON UPDATE CASCADE
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
+/* Resultado de la query
++------------+----------------------------------------------+------+-----+---------+----------------+
+| Field      | Type                                         | Null | Key | Default | Extra          |
++------------+----------------------------------------------+------+-----+---------+----------------+
+| id         | int(11)                                      | NO   | PRI | NULL    | auto_increment |
+| nombre     | varchar(100)                                 | NO   |     | NULL    |                |
+| apellido   | varchar(100)                                 | NO   |     | NULL    |                |
+| correo     | varchar(150)                                 | NO   | UNI | NULL    |                |
+| contrasena | varchar(255)                                 | NO   |     | NULL    |                |
+| rol        | enum('ALUMNO','PROFESOR','PERSONALSERVICIO') | NO   |     | NULL    |                |
+| activo     | tinyint(1)                                   | NO   |     | 1       |                |
++------------+----------------------------------------------+------+-----+---------+----------------+
+*/
 
 --
 -- Estructura de tabla para la tabla asistencia
@@ -63,12 +37,20 @@ CREATE TABLE IF NOT EXISTS personal_servicio (
 CREATE TABLE IF NOT EXISTS asistencia (
     id INT AUTO_INCREMENT PRIMARY KEY,
     fecha date NOT NULL,
-    hora_inicio time NOT NULL,
-    hora_fin time NOT NULL,
+    hora time NOT NULL,
     estado ENUM('PRESENTE','AUSENTE','RETRASO','JUSTIFICADA') NOT NULL,
-    modulo_id INT NOT NULL,
     usuario_id INT NOT NULL,
-    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE ON UPDATE CASCADE,
-    FOREIGN KEY (modulo_id) REFERENCES usuario(id) ON DELETE CASCADE ON UPDATE CASCADE
+    FOREIGN KEY (usuario_id) REFERENCES usuario(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
--- -------------------------------------------------------------------------------------------------------------------
+
+/* Resultado de la query
++------------+----------------------------------------------------+------+-----+---------+----------------+
+| Field      | Type                                               | Null | Key | Default | Extra          |
++------------+----------------------------------------------------+------+-----+---------+----------------+
+| id         | int(11)                                            | NO   | PRI | NULL    | auto_increment |
+| fecha      | date                                               | NO   |     | NULL    |                |
+| hora       | time                                               | NO   |     | NULL    |                |
+| estado     | enum('PRESENTE','AUSENTE','RETRASO','JUSTIFICADA') | NO   |     | NULL    |                |
+| usuario_id | int(11)                                            | NO   | MUL | NULL    |                |
++------------+----------------------------------------------------+------+-----+---------+----------------+
+*/
