@@ -1,0 +1,241 @@
+[
+    {
+        "id": "5ec0278bb1d392a7",
+        "type": "tab",
+        "label": "Flujo 1",
+        "disabled": false,
+        "info": "",
+        "env": []
+    },
+    {
+        "id": "67b60a82d20fce2c",
+        "type": "catch",
+        "z": "5ec0278bb1d392a7",
+        "name": "",
+        "scope": null,
+        "uncaught": false,
+        "x": 70,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "aedaaccf015fe233",
+        "type": "mqtt in",
+        "z": "5ec0278bb1d392a7",
+        "name": "",
+        "topic": "asistencia/registro",
+        "qos": "1",
+        "datatype": "auto-detect",
+        "broker": "35487c75310f8625",
+        "nl": false,
+        "rap": true,
+        "rh": 0,
+        "inputs": 0,
+        "x": 110,
+        "y": 80,
+        "wires": [
+            [
+                "333b1657076a225d",
+                "74f1225a8b50dc67"
+            ]
+        ]
+    },
+    {
+        "id": "333b1657076a225d",
+        "type": "debug",
+        "z": "5ec0278bb1d392a7",
+        "name": "debug 1",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 310,
+        "y": 80,
+        "wires": []
+    },
+    {
+        "id": "74f1225a8b50dc67",
+        "type": "function",
+        "z": "5ec0278bb1d392a7",
+        "name": "Separar fecha y hora",
+        "func": "// msg.payload es el JSON recibido\nlet datetime = msg.payload.datetime; // ej. '2025-12-02 16:00:18'\nif(datetime){\n    let parts = datetime.split(' ');\n    msg.payload.date = parts[0];\n    msg.payload.time = parts[1];\n}\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 360,
+        "y": 260,
+        "wires": [
+            [
+                "3b940d4f2d748087"
+            ]
+        ]
+    },
+    {
+        "id": "11b8e41ed0c5c259",
+        "type": "MySQL-Query",
+        "z": "5ec0278bb1d392a7",
+        "server": "de8af53c671af350",
+        "name": "",
+        "x": 790,
+        "y": 120,
+        "wires": [
+            [
+                "312d20ae327034ca"
+            ]
+        ]
+    },
+    {
+        "id": "3b940d4f2d748087",
+        "type": "function",
+        "z": "5ec0278bb1d392a7",
+        "name": "Preparar INSERT",
+        "func": "msg.topic = \"INSERT INTO asistencia (fecha, hora, estado, usuario_id) VALUES (?, ?, ?, ?)\";\nmsg.payload = [msg.payload.date, msg.payload.time, msg.payload.estado, msg.payload.user.id];\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 570,
+        "y": 260,
+        "wires": [
+            [
+                "11b8e41ed0c5c259"
+            ]
+        ]
+    },
+    {
+        "id": "5388ed4537a1a3fe",
+        "type": "inject",
+        "z": "5ec0278bb1d392a7",
+        "name": "",
+        "props": [
+            {
+                "p": "payload"
+            }
+        ],
+        "repeat": "",
+        "crontab": "",
+        "once": false,
+        "onceDelay": 0.1,
+        "topic": "",
+        "payload": "{   \"thing\": \"ESP32\",   \"tag\": \"63768a18\",   \"datetime\": \"2025-12-03 15:55:10\",   \"evento\": \"lectura\",   \"estado\": \"PRESENTE\",   \"user\": {     \"id\": \"1\",     \"nombre\": \"jusepe\",     \"apellido\": \"hogwart\",     \"email\": \"jusepe@gmail.com\"   } }",
+        "payloadType": "json",
+        "x": 70,
+        "y": 160,
+        "wires": [
+            [
+                "766bbbbd27fd7c11"
+            ]
+        ]
+    },
+    {
+        "id": "312d20ae327034ca",
+        "type": "debug",
+        "z": "5ec0278bb1d392a7",
+        "name": "debug 2",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 990,
+        "y": 120,
+        "wires": []
+    },
+    {
+        "id": "766bbbbd27fd7c11",
+        "type": "function",
+        "z": "5ec0278bb1d392a7",
+        "name": "function 1",
+        "func": "// msg.payload viene del Inject:\n// {\n//   \"thing\": \"ESP32\",\n//   \"tag\": \"63768a18\",\n//   \"datetime\": \"2025-12-03 15:55:10\",\n//   \"evento\": \"lectura\",\n//   \"estado\": \"PRESENTE\",\n//   \"user\": { \"id\": \"1\", \"nombre\": \"jusepe\", \"apellido\": \"hogwart\", \"email\": \"jusepe@gmail.com\" }\n// }\n\n// 1️⃣ Separar fecha y hora\nlet datetime = msg.payload.datetime || new Date().toISOString();\nlet parts = datetime.split(' ');\nlet fecha = parts[0];\nlet hora = parts[1];\n\n// 2️⃣ Preparar INSERT\nmsg.topic = \"INSERT INTO asistencia (fecha, hora, estado, usuario_id) VALUES (?, ?, ?, ?)\";\n\n// 3️⃣ msg.payload debe ser un array con los valores\nmsg.payload = [\n    fecha,\n    hora,\n    msg.payload.estado || 'PRESENTE',\n    msg.payload.user.id\n];\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 400,
+        "y": 140,
+        "wires": [
+            [
+                "11b8e41ed0c5c259"
+            ]
+        ]
+    },
+    {
+        "id": "35487c75310f8625",
+        "type": "mqtt-broker",
+        "name": "",
+        "broker": "a1hal0cuuvhw3o-ats.iot.us-east-1.amazonaws.com",
+        "port": "8883",
+        "tls": "efb64fce10476f4a",
+        "clientid": "NodeRed_Registros",
+        "autoConnect": true,
+        "usetls": true,
+        "protocolVersion": 4,
+        "keepalive": 60,
+        "cleansession": true,
+        "autoUnsubscribe": true,
+        "birthTopic": "",
+        "birthQos": "0",
+        "birthRetain": "false",
+        "birthPayload": "",
+        "birthMsg": {},
+        "closeTopic": "",
+        "closeQos": "0",
+        "closeRetain": "false",
+        "closePayload": "",
+        "closeMsg": {},
+        "willTopic": "",
+        "willQos": "0",
+        "willRetain": "false",
+        "willPayload": "",
+        "willMsg": {},
+        "userProps": "",
+        "sessionExpiry": ""
+    },
+    {
+        "id": "de8af53c671af350",
+        "type": "MySQL-Server",
+        "name": "",
+        "host": "10.0.1.133",
+        "port": "3306",
+        "tls": false,
+        "database": "control_asistencia"
+    },
+    {
+        "id": "efb64fce10476f4a",
+        "type": "tls-config",
+        "name": "",
+        "cert": "",
+        "key": "",
+        "ca": "",
+        "certname": "715bb86d22f77fa1495533d4b778514270916c8bb68b1b541c7c92603a22334a-certificate.pem.crt",
+        "keyname": "715bb86d22f77fa1495533d4b778514270916c8bb68b1b541c7c92603a22334a-private.pem.key",
+        "caname": "AmazonRootCA1.pem",
+        "servername": "a1hal0cuuvhw3o-ats.iot.us-east-1.amazonaws.com",
+        "verifyservercert": true,
+        "alpnprotocol": ""
+    },
+    {
+        "id": "bfa47eaf121f21bb",
+        "type": "global-config",
+        "env": [],
+        "modules": {
+            "node-red-contrib-mysql2-ts": "1.0.23"
+        }
+    }
+]

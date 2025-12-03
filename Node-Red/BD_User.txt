@@ -1,0 +1,10 @@
+CREATE USER 'nodeuser2'@'10.0.2.128' IDENTIFIED BY 'NodeRed1234!';
+GRANT ALL PRIVILEGES ON control_asistencia.* TO 'nodeuser'@'10.0.2.128';
+FLUSH PRIVILEGES;
+
+
+
+Pregunta de ejemplo en la presentacion:
+donde estan los alumnos que no han asistido
+
+
