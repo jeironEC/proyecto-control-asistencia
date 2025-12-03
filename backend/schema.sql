@@ -13,7 +13,7 @@ CREATE TABLE IF NOT EXISTS usuario (
     apellido VARCHAR(100) NOT NULL,
     correo VARCHAR(150) NOT NULL UNIQUE,
     contrasena VARCHAR(255) NOT NULL,
-    rol ENUM('ALUMNO','PROFESOR','PERSONALSERVICIO') NOT NULL,
+    rol ENUM('ALUMNO','PROFESOR','PERSONAL_SERVICIO') NOT NULL,
     activo tinyint(1) NOT NULL DEFAULT 1
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
 
@@ -26,7 +26,7 @@ CREATE TABLE IF NOT EXISTS usuario (
 | apellido   | varchar(100)                                 | NO   |     | NULL    |                |
 | correo     | varchar(150)                                 | NO   | UNI | NULL    |                |
 | contrasena | varchar(255)                                 | NO   |     | NULL    |                |
-| rol        | enum('ALUMNO','PROFESOR','PERSONALSERVICIO') | NO   |     | NULL    |                |
+| rol        | enum('ALUMNO','PROFESOR','PERSONAL_SERVICIO') | NO   |     | NULL    |                |
 | activo     | tinyint(1)                                   | NO   |     | 1       |                |
 +------------+----------------------------------------------+------+-----+---------+----------------+
 */
