@@ -24,7 +24,7 @@ class CreaUsuario(SQLModel):
     rol: RolUsuario
     activo: bool
 
-class ObtenUsuarios(SQLModel):
+class ObtenUsuario(SQLModel):
     """
     Esquema para obtener un usuario
 

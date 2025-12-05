@@ -1,6 +1,6 @@
 # Importaciones
 from sqlmodel import Session, select
-from models.Usuarios import Usuario, RolUsuario, Alumno, Profesor, PersonalServicio
+from models.Usuarios import Usuario
 from models.Asistencias import Asistencia
 from schemas.usuario import CreaUsuario, ActualizaUsuario
 from core.security import cifrar_contrasena, contrasena_contexto

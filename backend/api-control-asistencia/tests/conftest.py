@@ -6,6 +6,8 @@ from sqlmodel import SQLModel, Session
 from main import app
 from database.session import obtener_db
 from dotenv import load_dotenv
+from schemas.usuario import CreaUsuario, RolUsuario
+
 
 load_dotenv()
 
@@ -15,12 +17,13 @@ engine_test = create_engine(DATABASE_URL_TEST)
 
 SQLModel.metadata.create_all(bind=engine_test)
 
-@pytest.fixture()
+@pytest.fixture
 def session():
-    with Session(engine_test) as session:
-        with session.begin():
-            yield session
-            session.rollback()
+    session = Session(engine_test)
+    try:
+        yield session
+    finally:
+        session.close()
     
 @pytest.fixture()
 def client(session):
@@ -33,3 +36,17 @@ def client(session):
     app.dependency_overrides[obtener_db] = obtener_db_
     with TestClient(app) as c:
         yield c
+
+@pytest.fixture()
+def usuario(client):
+    datos = CreaUsuario(
+        nombre="Jeiron",
+        apellido="Espinal",
+        correo="jeiron.espinal@gmail.com",
+        contrasena="Jeiron123",
+        rol=RolUsuario.ALUMNO,
+        activo=1,
+    )
+
+    respuesta = client.post("/usuario", json=datos.model_dump(mode="json"))
+    return respuesta.json()

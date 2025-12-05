@@ -12,7 +12,7 @@ class CreaAsistencia(SQLModel):
     estado: EstadoAsistencia
     usuario_id: int
 
-class ObtenAsistencias(SQLModel):
+class ObtenAsistencia(SQLModel):
     """
     Esquema para obtener una asistencia que contiene el id, fecha, hora_inicio, hora_fin, estado, modulo_id y usuario_id
     """

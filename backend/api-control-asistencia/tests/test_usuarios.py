@@ -9,7 +9,6 @@ def test_creacion_usuario(client):
         contrasena="Jeiron123",
         rol=RolUsuario.ALUMNO,
         activo=1,
-        matricula="20242025jjec",
     )
 
     respuesta = client.post("/usuario", json=datos.model_dump(mode="json"))
@@ -18,21 +17,15 @@ def test_creacion_usuario(client):
 
     respuesta_json = respuesta.json()
 
-    assert respuesta_json["msg"] == "Usuario creado correctamente"
+    assert "id" in respuesta_json
+    assert "nombre" in respuesta_json
+    assert "apellido" in respuesta_json
+    assert "correo" in respuesta_json
+    assert "rol" in respuesta_json
+    assert "activo" in respuesta_json
 
-    # assert "id" in respuesta_json
-    # assert "nombre" in respuesta_json
-    # assert "apellido" in respuesta_json
-    # assert "correo" in respuesta_json
-    # assert "contrasena" in respuesta_json
-    # assert "rol" in respuesta_json
-    # assert "activo" in respuesta_json
-    # assert "matricula" in respuesta_json
-
-    # assert respuesta_json["nombre"] == "Jeiron"
-    # assert respuesta_json["apellido"] == "Espinal"
-    # assert respuesta_json["correo"] == "jeiron.espinal@gmail.com"
-    # assert respuesta_json["contrasena"] == "Jeiron123"
-    # assert respuesta_json["rol"] == "alumno"
-    # assert respuesta_json["activo"] == "1"
-    # assert respuesta_json["matricula"] == "20242025jjec"
+    assert respuesta_json["nombre"] == "Jeiron"
+    assert respuesta_json["apellido"] == "Espinal"
+    assert respuesta_json["correo"] == "jeiron.espinal@gmail.com"
+    assert respuesta_json["rol"] == "alumno"
+    assert respuesta_json["activo"] == True

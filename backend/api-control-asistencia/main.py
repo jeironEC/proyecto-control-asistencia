@@ -12,9 +12,9 @@ from core.config import CLAVE_SECRETA, ALGORITMO, TIEMPO_EXPIRACION_TOKEN_ACCESO
 from core.security import crear_token_acceso, oauth2_scheme
 from services.usuario_service import crear_usuario, obtener_usuario_id, obtener_usuario_correo, verificar_contrasena, obtener_usuarios, actualizar_usuario, actualizar_estado_usuario, eliminar_usuario, obtener_rango_asistencias_usuario
 from services.asistencia_service import crear_asistencia, obtener_asistencias, obtener_asistencia_id, actualizar_asistencia, eliminar_asistencia
-from schemas.usuario import CreaUsuario, ObtenUsuarios, ActualizaUsuario
+from schemas.usuario import CreaUsuario, ObtenUsuario, ActualizaUsuario
 from schemas.token import Token, TokenData
-from schemas.asistencia import CreaAsistencia, ObtenAsistencias, ActualizaAsistencia
+from schemas.asistencia import CreaAsistencia, ObtenAsistencia, ActualizaAsistencia
 from datetime import date
 
 # Evento de inicio: Crea todas las tablas en la base de datos
@@ -132,7 +132,7 @@ def inicio_sesion(datos_formulario: OAuth2PasswordRequestForm = Depends(), db: S
     return {"access_token": token_acceso, "token_type": "bearer"}
     
 # CRUD USUARIOS
-@app.post("/usuario", response_model=dict, tags=["Usuarios"], summary="Crear un nuevo usuario", status_code=status.HTTP_201_CREATED)
+@app.post("/usuario", response_model=ObtenUsuario, tags=["Usuarios"], summary="Crear un nuevo usuario", status_code=status.HTTP_201_CREATED)
 def crea_usuario(usuario: CreaUsuario, db: Session = Depends(obtener_db)):
     """
     Crea un nuevo usuario en el sistema.
@@ -156,10 +156,10 @@ def crea_usuario(usuario: CreaUsuario, db: Session = Depends(obtener_db)):
     resultado = crear_usuario(usuario, db)
 
     if resultado:
-        return {"msg": "Usuario creado correctamente"}
+        return ObtenUsuario.model_validate(resultado)
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ocurrio un error al intentar crear el usuario")
 
-@app.get("/usuarios", response_model=list[ObtenUsuarios], tags=["Usuarios"], summary="Obtener todos los usuarios")
+@app.get("/usuarios", response_model=list[ObtenUsuario], tags=["Usuarios"], summary="Obtener todos los usuarios")
 def usuarios(db: Session = Depends(obtener_db), usuario_actual = Depends(obtener_usuario_actual)):
     """
     Obtiene la lista completa de todos los usuarios registrados.
@@ -171,7 +171,7 @@ def usuarios(db: Session = Depends(obtener_db), usuario_actual = Depends(obtener
         usuario_actual: Usuario autenticado
     
     Devuelve:
-        list[ObtenUsuarios]: Lista de usuarios
+        list[ObtenUsuario]: Lista de usuarios
         
     Errores:
         - 401: No autenticado o token inválido
@@ -183,7 +183,7 @@ def usuarios(db: Session = Depends(obtener_db), usuario_actual = Depends(obtener
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ocurrio un error al intentar obtener todos los usuarios")
     return resultados
 
-@app.get("/usuario/{id}", response_model=ObtenUsuarios, tags=["Usuarios"], summary="Obtener usuario por ID")
+@app.get("/usuario/{id}", response_model=ObtenUsuario, tags=["Usuarios"], summary="Obtener usuario por ID")
 def usuario_id(id: int, db: Session = Depends(obtener_db), usuario_actual = Depends(obtener_usuario_actual)):
     """
     Obtiene la información de un usuario específico por su ID.
@@ -196,7 +196,7 @@ def usuario_id(id: int, db: Session = Depends(obtener_db), usuario_actual = Depe
         usuario_actual: Usuario autenticado
     
     Devuelve:
-        ObtenUsuarios: Datos del usuario encontrado
+        ObtenUsuario: Datos del usuario encontrado
         
     Errores:
         - 401: No autenticado o token inválido
@@ -205,7 +205,7 @@ def usuario_id(id: int, db: Session = Depends(obtener_db), usuario_actual = Depe
     usuario = obtener_usuario_id(id, db)
     if usuario is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Usuario no encontrado")
-    return ObtenUsuarios.model_validate(usuario)
+    return ObtenUsuario.model_validate(usuario)
 
 @app.patch("/usuario/{id}", response_model=dict, tags=["Usuarios"], summary="Actualizar usuario")
 def actualiza_usuario(id: int, datos: ActualizaUsuario, db: Session = Depends(obtener_db), usuario_actual = Depends(obtener_usuario_actual)):
@@ -296,8 +296,8 @@ def elimina_usuario(id: int, db: Session = Depends(obtener_db), usuario_actual =
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ocurrio un error al intentar eliminar el usuario") 
 
 # ASISTENCIAS
-@app.post("/asistencia", response_model=dict, tags=["Asistencias"], summary="Crear una nueva asistencia", status_code=status.HTTP_201_CREATED)
-def crea_asistencia(asistencia: CreaAsistencia, db: Session = Depends(obtener_db), usuario_actual = Depends(obtener_usuario_actual)):
+@app.post("/asistencia", response_model=ObtenAsistencia, tags=["Asistencias"], summary="Crear una nueva asistencia", status_code=status.HTTP_201_CREATED)
+def crea_asistencia(asistencia: CreaAsistencia, db: Session = Depends(obtener_db)):
     """
     Registra una nueva asistencia de un usuario a un módulo.
     
@@ -318,10 +318,10 @@ def crea_asistencia(asistencia: CreaAsistencia, db: Session = Depends(obtener_db
     resultado = crear_asistencia(asistencia, db)
 
     if resultado:
-        return {"msg": "Asistencia creada correctamente"}
+        return ObtenAsistencia.model_validate(resultado)
     raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ocurrio un error al intentar crear la asistencia")
 
-@app.get("/asistencias", response_model=list[ObtenAsistencias], tags=["Asistencias"], summary="Obtener todas las asistencias")
+@app.get("/asistencias", response_model=list[ObtenAsistencia], tags=["Asistencias"], summary="Obtener todas las asistencias")
 def asistencias(db: Session = Depends(obtener_db), usuario_actual = Depends(obtener_usuario_actual)):
     """
     Obtiene la lista completa de todas las asistencias registradas.
@@ -333,7 +333,7 @@ def asistencias(db: Session = Depends(obtener_db), usuario_actual = Depends(obte
         usuario_actual: Usuario autenticado
     
     Devuelve:
-        list[ObtenAsistencias]: Lista de asistencias
+        list[ObtenAsistencia]: Lista de asistencias
         
     Errores:
         - 401: No autenticado o token inválido
@@ -345,7 +345,7 @@ def asistencias(db: Session = Depends(obtener_db), usuario_actual = Depends(obte
         raise HTTPException(status_code=status.HTTP_500_INTERNAL_SERVER_ERROR, detail="Ocurrio un error al intentar obtener todas las asistencias")
     return resultados
 
-@app.get("/asistencia/{id}", response_model=ObtenAsistencias, tags=["Asistencias"], summary="Obtener asistencia por ID")
+@app.get("/asistencia/{id}", response_model=ObtenAsistencia, tags=["Asistencias"], summary="Obtener asistencia por ID")
 def asistencia_id(id: int, db: Session = Depends(obtener_db), usuario_actual = Depends(obtener_usuario_actual)):
     """
     Obtiene la información de una asistencia específica por su ID.
@@ -358,7 +358,7 @@ def asistencia_id(id: int, db: Session = Depends(obtener_db), usuario_actual = D
         usuario_actual: Usuario autenticado
     
     Devuelve:
-        ObtenAsistencias: Datos de la asistencia encontrada
+        ObtenAsistencia: Datos de la asistencia encontrada
         
     Errores:
         - 401: No autenticado o token inválido
@@ -367,9 +367,9 @@ def asistencia_id(id: int, db: Session = Depends(obtener_db), usuario_actual = D
     asistencia = obtener_asistencia_id(id, db)
     if asistencia is None:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Asistencia no encontrada")
-    return ObtenAsistencias.model_validate(asistencia)
+    return ObtenAsistencia.model_validate(asistencia)
 
-@app.get("/usuario/asistencias/{id}/{fecha_inicial}/{fecha_final}", response_model=list[ObtenAsistencias], tags=["Asistencias"], summary="Buscar asistencias por rango de fechas")
+@app.get("/usuario/asistencias/{id}/{fecha_inicial}/{fecha_final}", response_model=list[ObtenAsistencia], tags=["Asistencias"], summary="Buscar asistencias por rango de fechas")
 def usuario_asistencias(id: int, fecha_inicial: date, fecha_final: date, db: Session = Depends(obtener_db), usuario_actual = Depends(obtener_usuario_actual)):    
     """
     Obtiene las asistencias de un usuario específico filtradas por un rango de fechas.
@@ -384,7 +384,7 @@ def usuario_asistencias(id: int, fecha_inicial: date, fecha_final: date, db: Ses
         usuario_actual: Usuario autenticado
     
     Devuelve:
-        list[ObtenAsistencias]: Lista de asistencias en el rango especificado
+        list[ObtenAsistencia]: Lista de asistencias en el rango especificado
         
     Errores:
         - 400: Rango de fechas inválido (fecha_inicial > fecha_final)

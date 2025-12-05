@@ -17,7 +17,7 @@ dependencies = [
     "sqlmodel",
     "pymysql",
     "python-dotenv",
-    "pyjwt[crypto]",
+    "pyjwt",
     "passlib[bcrypt]",
     "pwdlib[argon2]",
 ]
