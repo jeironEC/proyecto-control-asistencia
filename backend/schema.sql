@@ -146,6 +146,7 @@ CREATE TABLE IF NOT EXISTS modulo_horario (
 | dia_semana  | enum('LUNES','MARTES','MIERCOLES','JUEVES','VIERNES') | NO   |     | NULL    |                |
 | hora_inicio | time                                                  | NO   |     | NULL    |                |
 | hora_fin    | time                                                  | NO   |     | NULL    |                |
+| margen      | int(11)                                               | NO   |     | NULL    |                |
 | modulo_id   | int(11)                                               | NO   | MUL | NULL    |                |
 +-------------+-------------------------------------------------------+------+-----+---------+----------------+
 */
