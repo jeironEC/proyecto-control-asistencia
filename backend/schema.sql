@@ -70,6 +70,7 @@ CREATE TABLE IF NOT EXISTS asistencia (
 --
 CREATE TABLE IF NOT EXISTS horario_empleado (
     id INT AUTO_INCREMENT PRIMARY KEY,
+    dia_semana ENUM('LUNES','MARTES','MIERCOLES','JUEVES','VIERNES') NOT NULL,
     hora_entrada TIME NOT NULL,
     hora_salida TIME NOT NULL,
     margen TIME NOT NULL,
@@ -90,11 +91,11 @@ CREATE TABLE IF NOT EXISTS horario_empleado (
 */
 
 /* INSERCIONES DE HORARIOS EMPLEADOS */
-INSERT INTO horario_empleado (hora_entrada, hora_salida, margen, usuario_id)
-VALUES ('14:30:00', '21:00:00', 10, 2);
+INSERT INTO horario_empleado (dia_semana, hora_entrada, hora_salida, margen, usuario_id)
+VALUES ('LUNES', '14:30:00', '21:00:00', 10, 2);
 
-INSERT INTO horario_empleado (hora_entrada, hora_salida, margen, usuario_id)
-VALUES ('07:30:00', '14:30:00', 10, 3);
+INSERT INTO horario_empleado (dia_semana, hora_entrada, hora_salida, margen, usuario_id)
+VALUES ('LUNES', '07:30:00', '14:30:00', 10, 3);
 
 
 --
@@ -132,6 +133,7 @@ CREATE TABLE IF NOT EXISTS modulo_horario (
     dia_semana ENUM('LUNES','MARTES','MIERCOLES','JUEVES','VIERNES') NOT NULL,
     hora_inicio TIME NOT NULL,
     hora_fin TIME NOT NULL,
+    margen INT NOT NULL,
     modulo_id INT NOT NULL,
     FOREIGN KEY (modulo_id) REFERENCES modulo(id) ON DELETE CASCADE ON UPDATE CASCADE
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4;
@@ -149,32 +151,32 @@ CREATE TABLE IF NOT EXISTS modulo_horario (
 */
 
 /* INSERCIONES DE MODULOS HORARIOS */
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('LUNES', '08:00:00', '09:00:00', 1);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('LUNES', '08:00:00', '09:00:00', 10, 1);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('MARTES', '09:00:00', '10:00:00', 1);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('MARTES', '09:00:00', '10:00:00', 10, 1);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('MIERCOLES', '10:00:00', '11:00:00', 1);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('MIERCOLES', '10:00:00', '11:00:00', 10, 1);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('JUEVES', '11:30:00', '12:30:00', 1);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('JUEVES', '11:30:00', '12:30:00', 10, 1);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('VIERNES', '12:30:00', '13:30:00', 1);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('VIERNES', '12:30:00', '13:30:00', 10, 1);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('LUNES', '15:30:00', '16:30:00', 2);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('LUNES', '15:30:00', '16:30:00', 10, 2);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('MARTES', '16:30:00', '17:30:00', 2);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('MARTES', '16:30:00', '17:30:00', 10, 2);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('MIERCOLES', '18:00:00', '19:00:00', 2);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('MIERCOLES', '18:00:00', '19:00:00', 10, 2);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('JUEVES', '19:30:00', '20:30:00', 2);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('JUEVES', '19:30:00', '20:30:00', 10, 2);
 
-INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, modulo_id)
-VALUES ('VIERNES', '20:00:00', '21:00:00', 2);
+INSERT INTO modulo_horario (dia_semana, hora_inicio, hora_fin, margen, modulo_id)
+VALUES ('VIERNES', '20:00:00', '21:00:00', 10, 2);
