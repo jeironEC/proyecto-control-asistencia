@@ -9,6 +9,7 @@ struct User {
   String nombre;
   String apellido;
   String email;
+  String rol;
   int horaEntrada;
 };
 

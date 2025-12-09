@@ -3,9 +3,9 @@
 
 
 User users[] = {
-  {"63768A18", "1", "jusepe", "hogwart", "algo1@gmail.com", 9 * 3600},
-  {"E32F8718", "6", "profesor1", "MCgonagal", "algo6@gmail.com", 9 * 3600},
-  {"D365E812", "11", "pservicio1", "algo1", "algo11@gmail.com", 9 * 3600}
+  {"63768A18", "1", "manuel", "torres", "manuel.torres@gmail.com", "ALUMNO", 9 * 3600},
+  {"E32F8718", "2", "antonio", "pedregal", "antonio.pedregal@gmail.com", "PROFESOR", 9 * 3600},
+  {"D365E812", "3", "otoniel", "escobar", "otoniel.escobar@gmail.com", "PERSONAL_SERVICIO", 9 * 3600}
 };
 
 User* getUserFromTag(String tag) {

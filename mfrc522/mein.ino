@@ -7,10 +7,12 @@
 #include <SPI.h>
 #include <MFRC522.h>
 
+// --- IMPORTAR EL MQTT CLIENT USADO EN AWS-IoT.ino ---
+extern MQTTClient client;
+
 // --- Referencias de funciones de otros módulos ---
 void setupWifi();
 void setupAWS();
-void reconnectAWS();
 void leerTarjeta();
 void publishRegistro(String tagID);
 String getDateTimeString();
@@ -20,12 +22,13 @@ void setupRFID();
 // --- Variables globales ---
 WiFiClientSecure net;
 String currentTag = "";
+bool respuestaOK = false;
 
 // --- LED feedback ---
-#define LED_OK 2     // LED integrado en muchas ESP32
-#define LED_ERROR 4  // si tienes un LED externo opcional
+#define LED_OK 2     // LED integrado
+#define LED_ERROR 4  // LED externo
 
-// --- Setup principal ---
+// ---------- SETUP PRINCIPAL ----------
 void setup() {
   Serial.begin(9600);
   delay(1000);
@@ -42,44 +45,54 @@ void setup() {
   Serial.println("Sistema listo para leer tarjetas.");
 }
 
-// --- Loop principal ---
+// ---------- LOOP PRINCIPAL ----------
 void loop() {
+
   // Mantener viva la conexión MQTT
   if (!client.connected()) {
-    reconnectAWS(); // tu función de reconexión
+    reconnectAWS();
   }
-  client.loop(); // 🔹 Mantiene el ping y recibe mensajes
+  client.loop(); // recibe mensajes MQTT
 
-  // Leer tarjeta si está presente
+  // Leer tarjeta
   leerTarjeta();
 
-  // --- Latido cada 10 segundos ---
+  // Latido cada 10 segundos
   static unsigned long lastPing = 0;
-  if (millis() - lastPing > 10000) { // cada 10 s
+  if (millis() - lastPing > 10000) {
     client.publish("asistencia/ping", "{\"status\":\"alive\"}");
     lastPing = millis();
   }
 
-  delay(100); // pequeño delay, pero no más de 200 ms
+  delay(50);
 }
 
-// --- Función para feedback visual ---
+// ---------- FEEDBACK LED ----------
 void feedbackLectura(bool exito) {
   if (exito) {
     digitalWrite(LED_OK, HIGH);
-    delay(200);
+    delay(400);
     digitalWrite(LED_OK, LOW);
   } else {
     digitalWrite(LED_ERROR, HIGH);
-    delay(500);
+    delay(600);
     digitalWrite(LED_ERROR, LOW);
   }
 }
 
+// ---------- RECONEXIÓN MQTT ----------
 void reconnectAWS() {
+  Serial.println("⚠️ Conexión perdida. Reintentando...");
+
   while (!client.connect(THINGNAME)) {
-    Serial.print("Reconectando a AWS IoT...");
-    delay(1000);
+    Serial.print(".");
+    delay(500);
   }
-  Serial.println("✅ Reconectado a AWS IoT");
+
+  Serial.println("\n✅ Reconectado a AWS IoT");
+
+  // IMPORTANTE → volver a suscribir
+  bool ok = client.subscribe("asistencia/ack");
+  Serial.print("Resuscripción a asistencia/ack -> ");
+  Serial.println(ok ? "OK" : "FAIL");
 }
