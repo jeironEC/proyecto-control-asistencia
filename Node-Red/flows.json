@@ -8,19 +8,6 @@
         "env": []
     },
     {
-        "id": "67b60a82d20fce2c",
-        "type": "catch",
-        "z": "5ec0278bb1d392a7",
-        "name": "",
-        "scope": null,
-        "uncaught": false,
-        "x": 70,
-        "y": 260,
-        "wires": [
-            []
-        ]
-    },
-    {
         "id": "aedaaccf015fe233",
         "type": "mqtt in",
         "z": "5ec0278bb1d392a7",
@@ -33,12 +20,12 @@
         "rap": true,
         "rh": 0,
         "inputs": 0,
-        "x": 110,
+        "x": 130,
         "y": 80,
         "wires": [
             [
                 "333b1657076a225d",
-                "74f1225a8b50dc67"
+                "99ec0919b3bc579e"
             ]
         ]
     },
@@ -55,88 +42,9 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 310,
+        "x": 410,
         "y": 80,
         "wires": []
-    },
-    {
-        "id": "74f1225a8b50dc67",
-        "type": "function",
-        "z": "5ec0278bb1d392a7",
-        "name": "Separar fecha y hora",
-        "func": "// msg.payload es el JSON recibido\nlet datetime = msg.payload.datetime; // ej. '2025-12-02 16:00:18'\nif(datetime){\n    let parts = datetime.split(' ');\n    msg.payload.date = parts[0];\n    msg.payload.time = parts[1];\n}\nreturn msg;",
-        "outputs": 1,
-        "timeout": "",
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 360,
-        "y": 260,
-        "wires": [
-            [
-                "3b940d4f2d748087"
-            ]
-        ]
-    },
-    {
-        "id": "11b8e41ed0c5c259",
-        "type": "MySQL-Query",
-        "z": "5ec0278bb1d392a7",
-        "server": "de8af53c671af350",
-        "name": "",
-        "x": 790,
-        "y": 120,
-        "wires": [
-            [
-                "312d20ae327034ca"
-            ]
-        ]
-    },
-    {
-        "id": "3b940d4f2d748087",
-        "type": "function",
-        "z": "5ec0278bb1d392a7",
-        "name": "Preparar INSERT",
-        "func": "msg.topic = \"INSERT INTO asistencia (fecha, hora, estado, usuario_id) VALUES (?, ?, ?, ?)\";\nmsg.payload = [msg.payload.date, msg.payload.time, msg.payload.estado, msg.payload.user.id];\nreturn msg;",
-        "outputs": 1,
-        "timeout": "",
-        "noerr": 0,
-        "initialize": "",
-        "finalize": "",
-        "libs": [],
-        "x": 570,
-        "y": 260,
-        "wires": [
-            [
-                "11b8e41ed0c5c259"
-            ]
-        ]
-    },
-    {
-        "id": "5388ed4537a1a3fe",
-        "type": "inject",
-        "z": "5ec0278bb1d392a7",
-        "name": "",
-        "props": [
-            {
-                "p": "payload"
-            }
-        ],
-        "repeat": "",
-        "crontab": "",
-        "once": false,
-        "onceDelay": 0.1,
-        "topic": "",
-        "payload": "{   \"thing\": \"ESP32\",   \"tag\": \"63768a18\",   \"datetime\": \"2025-12-03 15:55:10\",   \"evento\": \"lectura\",   \"estado\": \"PRESENTE\",   \"user\": {     \"id\": \"1\",     \"nombre\": \"jusepe\",     \"apellido\": \"hogwart\",     \"email\": \"jusepe@gmail.com\"   } }",
-        "payloadType": "json",
-        "x": 70,
-        "y": 160,
-        "wires": [
-            [
-                "766bbbbd27fd7c11"
-            ]
-        ]
     },
     {
         "id": "312d20ae327034ca",
@@ -151,8 +59,8 @@
         "targetType": "full",
         "statusVal": "",
         "statusType": "auto",
-        "x": 990,
-        "y": 120,
+        "x": 1150,
+        "y": 80,
         "wires": []
     },
     {
@@ -160,20 +68,156 @@
         "type": "function",
         "z": "5ec0278bb1d392a7",
         "name": "function 1",
-        "func": "// msg.payload viene del Inject:\n// {\n//   \"thing\": \"ESP32\",\n//   \"tag\": \"63768a18\",\n//   \"datetime\": \"2025-12-03 15:55:10\",\n//   \"evento\": \"lectura\",\n//   \"estado\": \"PRESENTE\",\n//   \"user\": { \"id\": \"1\", \"nombre\": \"jusepe\", \"apellido\": \"hogwart\", \"email\": \"jusepe@gmail.com\" }\n// }\n\n// 1️⃣ Separar fecha y hora\nlet datetime = msg.payload.datetime || new Date().toISOString();\nlet parts = datetime.split(' ');\nlet fecha = parts[0];\nlet hora = parts[1];\n\n// 2️⃣ Preparar INSERT\nmsg.topic = \"INSERT INTO asistencia (fecha, hora, estado, usuario_id) VALUES (?, ?, ?, ?)\";\n\n// 3️⃣ msg.payload debe ser un array con los valores\nmsg.payload = [\n    fecha,\n    hora,\n    msg.payload.estado || 'PRESENTE',\n    msg.payload.user.id\n];\n\nreturn msg;",
+        "func": "// Preparar fecha y hora actual\nlet fechaActual = new Date();\n\n// Se necesitas compensar zona horaria para que sea Madrid/España\nfechaActual.setHours(fechaActual.getHours() + 1); \nnode.warn(`Hora local actual: ${fechaActual.toString()}`);\n\n// Obtener la fecha de la tarjeta o de la instancia de Date creada anteriormente\nlet datetimeStr = msg.payload.datetime || fechaActual.toISOString();\n\n// Obtener la fecha actual final que se usara para validar\nlet fechaActualFinal = new Date(datetimeStr);\n\n// Formatear la fecha al formato deseado (YYYY-MM-DD)\nlet fecha = fechaActualFinal.toISOString().slice(0, 10);\n\nlet horaActual = fechaActualFinal;\nnode.warn(`HoraActual: ${horaActual.toTimeString().slice(0, 8)}`);\n\n// Datos del usuario\nlet datos = msg.datos || {};\nnode.warn(`Datos del usuario: ${JSON.stringify(datos)}`);\n\n// Obtener rol del usuario de la tarjeta\nlet rol = (datos?.user?.rol || \"\").toLowerCase();\nnode.warn(`Rol detectado: ${rol}`);\n\n// Funciones\nfunction strAFechaActual(fechaStr) {\n    if (!fechaStr) {\n        return null;\n    }\n    const [h, m, s] = fechaStr.split(\":\").map(Number);\n    let d = new Date();\n    d.setHours(h, m, s || 0, 0);\n    return d;\n}\n\nfunction sumarMinutos(fecha, minutos) {\n    return new Date(fecha.getTime() + (minutos || 0) * 60000);\n}\n\nfunction aMinutos(fecha) {\n    return fecha.getHours() * 60 + fecha.getMinutes();\n}\n\nlet estado = \"AUSENTE\";\n\n// Lógica empleados\nif (rol === \"profesor\" || rol === \"personal_servicio\") {\n    // msg.payload viene del query SQL: horario del día\n    const horario = Array.isArray(msg.payload) ? msg.payload[0] : null;\n    node.warn(`Horario empleado: ${JSON.stringify(horario)}`);\n\n    if (!horario) {\n        node.warn(\"No hay datos en horario_empleado, se marcará AUSENTE\");\n        estado = \"AUSENTE\";\n    } else {\n        // Convertir horas a Date de hoy\n        let inicio = strAFechaActual(horario.hora_entrada);\n        let fin = strAFechaActual(horario.hora_salida);\n        let margen = horario.margen || 0;\n        let inicioConMargen = sumarMinutos(inicio, margen);\n\n        // Convertir todo a minutos desde medianoche\n        let actualMin = aMinutos(horaActual);\n        let inicioMin = aMinutos(inicio);\n        let finMin = aMinutos(fin);\n        let inicioConMargenMin = aMinutos(inicioConMargen);\n\n        node.warn(`Entrada: ${horario.hora_entrada} (${inicioMin}min), Entrada+margen: ${inicioConMargenMin}min, Salida: ${horario.hora_salida} (${finMin}min), Actual: ${actualMin}min`);\n\n        // Considerar si el horario cruza medianoche\n        if (finMin < inicioMin) {\n            // Horario nocturno\n            if (actualMin >= inicioMin || actualMin <= finMin) {\n                estado = (actualMin <= inicioConMargenMin) ? \"PRESENTE\" : \"RETRASO\";\n            } else {\n                estado = \"AUSENTE\";\n            }\n        } else {\n            // Horario normal\n            if (actualMin >= inicioMin && actualMin <= finMin) {\n                estado = (actualMin <= inicioConMargenMin || actualMin <= finMin) ? \"PRESENTE\" : \"RETRASO\";\n            } else {\n                estado = \"AUSENTE\";\n            }\n        }\n\n        node.warn(`Estado calculado para empleado: ${estado}`);\n    }\n}\n\n// Lógica alumnos\nelse if (rol === \"alumno\") {\n    // msg.payload ahora contiene el resultado de la consulta SQL: módulos del día\n    const modulos = Array.isArray(msg.payload) ? msg.payload : [];\n    node.warn(`Módulos del día: ${JSON.stringify(modulos)}`);\n\n    if (modulos.length === 0) {\n        node.warn(\"No hay módulos disponibles para el día, se marcará AUSENTE\");\n    }\n\n    const actualMin = aMinutos(horaActual);\n\n    for (let m of modulos) {\n        let inicio = strAFechaActual(m.hora_inicio);\n        let fin = strAFechaActual(m.hora_fin);\n        let margen = m.margen || 0;\n        let inicioConMargen = sumarMinutos(inicio, margen);\n\n        let inicioMin = aMinutos(inicio);\n        let finMin = aMinutos(fin);\n        let inicioConMargenMin = aMinutos(inicioConMargen);\n\n        node.warn(`Módulo: inicio=${m.hora_inicio}(${inicioMin}min), fin=${m.hora_fin}(${finMin}min), margen=${margen}min`);\n\n        if (finMin < inicioMin) {\n            // Módulo que cruza medianoche\n            if (actualMin >= inicioMin || actualMin <= finMin) {\n                estado = (actualMin <= inicioConMargenMin || actualMin <= finMin) ? \"PRESENTE\" : \"RETRASO\";\n                node.warn(`Estado calculado para módulo nocturno: ${estado}`);\n                break;\n            }\n        } else {\n            // Módulo normal\n            if (actualMin >= inicioMin && actualMin <= finMin) {\n                estado = (actualMin <= inicioConMargenMin) ? \"PRESENTE\" : \"RETRASO\";\n                node.warn(`Estado calculado para módulo normal: ${estado}`);\n                break;\n            }\n        }\n    }\n}\n\n// --- Preparar INSERT ---\nmsg.topic = \"INSERT INTO asistencia (fecha, hora, estado, usuario_id) VALUES (?, ?, ?, ?)\";\nmsg.payload = [\n    fecha,\n    horaActual.toTimeString().slice(0, 8),\n    estado,\n    datos.user.id\n];\n\nnode.warn(`Consulta INSERT generada: ${msg.topic}`);\nnode.warn(`Valores para INSERT: ${JSON.stringify(msg.payload)}`);\n\nreturn msg;\n",
         "outputs": 1,
         "timeout": 0,
         "noerr": 0,
         "initialize": "",
         "finalize": "",
         "libs": [],
-        "x": 400,
+        "x": 800,
+        "y": 260,
+        "wires": [
+            [
+                "436ca8a4481fc266",
+                "95af26662134c8bf"
+            ]
+        ]
+    },
+    {
+        "id": "436ca8a4481fc266",
+        "type": "debug",
+        "z": "5ec0278bb1d392a7",
+        "name": "debug 3",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1030,
+        "y": 260,
+        "wires": []
+    },
+    {
+        "id": "95af26662134c8bf",
+        "type": "mysql",
+        "z": "5ec0278bb1d392a7",
+        "mydb": "bec5e4e227c3e852",
+        "name": "INSERT asistencia",
+        "x": 910,
+        "y": 80,
+        "wires": [
+            [
+                "312d20ae327034ca",
+                "0ccffe851d89449d"
+            ]
+        ]
+    },
+    {
+        "id": "99ec0919b3bc579e",
+        "type": "function",
+        "z": "5ec0278bb1d392a7",
+        "name": "Preparar SELECT",
+        "func": "// Validar payload\nif (!msg.payload) {\n    node.error(\"msg.payload no existe\");\n    return null;\n}\n\n// Obtener datos del usuario de la tarjeta\nlet datos = msg.payload;\n\n// Obtener el rol del usuario de la tarjeta\nlet rol = (datos?.user?.rol || \"\").toLowerCase();\n\n// Obtener datetime de la tarjeta o usar fecha actual\nlet fechaActual = datos.datetime ? new Date(datos.datetime) : new Date();\n\n// Obtener el número del dia de la fecha actual\nlet numeroDia = fechaActual.getDay();\n\n// Lista de nombre de los dia de la semana\nconst DIAS = [\n    \"DOMINGO\",\n    \"LUNES\",\n    \"MARTES\",\n    \"MIERCOLES\",\n    \"JUEVES\",\n    \"VIERNES\",\n    \"SABADO\"\n];\n\n// Obtener el nombre del dia de la fecha actual\nlet diaSemana = DIAS[numeroDia];\n\n// Guardar datos para siguiente nodo\nmsg.datos = datos;\n\n// Depuración\nnode.warn(`DIA SEMANA STR: ${diaSemana}`);\nnode.warn(`DATOS: ${JSON.stringify(msg.datos)}`);\nnode.warn(`DATETIME: ${fechaActual}`);\nnode.warn(`DIA SEMANA INDEX: ${numeroDia}`);\n\n// Segun el rol del usuario, se realizará una consulta en la base de datos para obtener los horario a verificar\nswitch (rol) {\n    case \"profesor\":\n    case \"personal_servicio\":\n        msg.topic = \"SELECT * FROM horario_empleado WHERE dia_semana = ? AND usuario_id = ? LIMIT 1\";\n        msg.payload = [diaSemana, datos.user.id];\n        msg.busqueda = \"empleado\";\n        break;\n\n    case \"alumno\":\n        msg.topic = \"SELECT * FROM modulo_horario WHERE dia_semana = ?\";\n        msg.payload = [diaSemana];\n        msg.busqueda = \"alumno\";\n        break;\n\n    default:\n        node.error(`Rol desconocido: ${rol}`);\n        return null;\n}\n\nreturn msg;",
+        "outputs": 1,
+        "timeout": "",
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 330,
+        "y": 260,
+        "wires": [
+            [
+                "2d5bc09ce943faa6"
+            ]
+        ]
+    },
+    {
+        "id": "67b60a82d20fce2c",
+        "type": "catch",
+        "z": "5ec0278bb1d392a7",
+        "name": "",
+        "scope": null,
+        "uncaught": false,
+        "x": 70,
+        "y": 260,
+        "wires": [
+            []
+        ]
+    },
+    {
+        "id": "2d5bc09ce943faa6",
+        "type": "mysql",
+        "z": "5ec0278bb1d392a7",
+        "mydb": "bec5e4e227c3e852",
+        "name": "SELECT horario rol asistencia",
+        "x": 570,
+        "y": 300,
+        "wires": [
+            [
+                "766bbbbd27fd7c11"
+            ]
+        ]
+    },
+    {
+        "id": "659deb6de07d69f6",
+        "type": "mqtt out",
+        "z": "5ec0278bb1d392a7",
+        "name": "",
+        "topic": "asistencia/ack",
+        "qos": "0",
+        "retain": "false",
+        "respTopic": "",
+        "contentType": "",
+        "userProps": "",
+        "correl": "",
+        "expiry": "",
+        "broker": "35487c75310f8625",
+        "x": 1320,
+        "y": 200,
+        "wires": []
+    },
+    {
+        "id": "0ccffe851d89449d",
+        "type": "function",
+        "z": "5ec0278bb1d392a7",
+        "name": "function 2",
+        "func": "msg.topic = \"asistencia/ack\";\nmsg.payload = \"OK\";\nreturn msg;",
+        "outputs": 1,
+        "timeout": 0,
+        "noerr": 0,
+        "initialize": "",
+        "finalize": "",
+        "libs": [],
+        "x": 1140,
         "y": 140,
         "wires": [
             [
-                "11b8e41ed0c5c259"
+                "659deb6de07d69f6",
+                "f94dd0ee36051653"
             ]
         ]
+    },
+    {
+        "id": "f94dd0ee36051653",
+        "type": "debug",
+        "z": "5ec0278bb1d392a7",
+        "name": "debug 4",
+        "active": true,
+        "tosidebar": true,
+        "console": true,
+        "tostatus": false,
+        "complete": "true",
+        "targetType": "full",
+        "statusVal": "",
+        "statusType": "auto",
+        "x": 1250,
+        "y": 260,
+        "wires": []
     },
     {
         "id": "35487c75310f8625",
@@ -208,13 +252,14 @@
         "sessionExpiry": ""
     },
     {
-        "id": "de8af53c671af350",
-        "type": "MySQL-Server",
+        "id": "bec5e4e227c3e852",
+        "type": "MySQLdatabase",
         "name": "",
         "host": "10.0.1.133",
         "port": "3306",
-        "tls": false,
-        "database": "control_asistencia"
+        "db": "control_asistencia",
+        "tz": "",
+        "charset": "UTF8"
     },
     {
         "id": "efb64fce10476f4a",
@@ -231,11 +276,11 @@
         "alpnprotocol": ""
     },
     {
-        "id": "bfa47eaf121f21bb",
+        "id": "b9fddc449bc374e4",
         "type": "global-config",
         "env": [],
         "modules": {
-            "node-red-contrib-mysql2-ts": "1.0.23"
+            "node-red-node-mysql": "2.0.0"
         }
     }
 ]
